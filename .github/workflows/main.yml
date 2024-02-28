@@ -10,29 +10,27 @@ jobs:
 
     steps:
 
-    - name: Download ngrok  
-      uses: wei/wget@v1
-      with:
-        args: -O ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip
+    - name: Download ngrok   
+      run: Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
 
     - name: Extract
       run: Expand-Archive ngrok.zip
 
-    - name: Update ngrok
+    - name: Update ngrok  
       run: .\ngrok\ngrok.exe update
 
     - name: Enable TS
-      run: | 
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      run: |
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0 
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop" 
         
-    - run: |  
+    - run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
     - name: Start ngrok
       run: .\ngrok\ngrok.exe tcp --region=us 3389
     
-    - name: Handle errors
+    - name: Handle errors  
       if: ${{ failure() }}
       run: echo "Ngrok failed to start"
